@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Page Title</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+		<script src="main.js"></script>
+		<script src="http://ajax.aspnetcdn.com/ajax/mobileservices/MobileServices.Web-1.1.3.min.js"></script>
+	</head>
+	<body>
+		<form method="" onsubmit="return validateForm()" name="form">
+			<input type="text" name="myName" placeholder="My secrete name" value="Agenty" />
+			<input type="text" name="agentName" placeholder="The aggent name" />
+			<input type="text" name="msg" />
+			<input type="submit" value="Submit">
+		</form>
+		
+		<div id="msgs">
+			
+		</div>
+		
+		<script>
+			var client = new WindowsAzure.MobileServiceClient("https://testo.azure-mobile.net/"
+			, "tTlgpxivcnlFFeMMrWvjYFTNnPBLjM87"
+				);
+			function validateForm()
+			{
+				var item = {};
+				item["Sender"] = document.forms["form"]["myName"].value;
+				item["Recepient"] = document.forms["form"]["agentName"].value;
+				item["Body"] = document.forms["form"]["msg"].value;
+				
+				
+				if(item["Sender"].length > 0 && item["Body"].length > 0 && item["Recepient"].length > 0)
+					client.getTable("Message").insert(item);
+				else
+					alert("Cant be empty")
+				return false;
+			}
+			
+			var msgHTML = "";
+			// Read all data
+			setInterval(function(){
+				client.getTable("Message").read().done(function (messages) {
+					try	{
+						msgHTML = "";
+						
+						messages.forEach(function(message){
+							if(message.Recepient.match(document.forms["form"]["myName"].value)) {
+								msgHTML += ("<p>" + message.Body + "</p>");
+							}
+						});
+						console.log(msgHTML);
+						document.getElementById("msgs").innerHTML = msgHTML;
+						
+					} catch(ex) {
+						
+					}
+				})
+			}, 100);
+		</script>
+	</body>
+
+</html>
